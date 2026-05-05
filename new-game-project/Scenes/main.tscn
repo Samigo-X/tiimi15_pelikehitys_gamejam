@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3ir376df04gd"]
+
+[ext_resource type="Script" uid="uid://cf5dnwd3ick03" path="res://Scripts/main.gd" id="1_jjgbg"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_jjgbg")
+
+[node name="GameArea" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -600.0
+offset_right = 150.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.17641911, 0.17641908, 0.17641908, 1)
+
+[node name="GridLines" type="Node2D" parent="GameArea"]
