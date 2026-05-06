@@ -54,9 +54,10 @@ var tetrominoes = [i_tetromino,t_tetromino,o_tetromino,z_tetromino,s_tetromino,l
 var all_tetrominoes = tetrominoes.duplicate()
 
 # ===== CONSTANTS =====
-const COLS = 12
-const ROWS = 22
-const START_POSITION = Vector2i(5,1)
+const COLS = 10
+const ROWS = 20
+const BOARD_OFFSET = Vector2i(1, 1)
+const START_POSITION = Vector2i(3, 0)
 
 # ===== GAME STATE =====
 var current_position: Vector2i
@@ -82,7 +83,7 @@ func _ready():
 
 func start_new_game():
 	current_tetromino_type = choose_tetromino()
-	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type),0)
+	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
 	initialize_tetromino()
 
 func choose_tetromino():
@@ -91,10 +92,13 @@ func choose_tetromino():
 	tetrominoes.shuffle()
 	return tetrominoes.pop_front()
 
+func board_pos(pos: Vector2i) -> Vector2i:
+	return BOARD_OFFSET + pos
+
 func initialize_tetromino():
 	# GAME OVER -tarkistus
 	for block in current_tetromino_type[0]:
-		if board_layer.get_cell_source_id(START_POSITION + block) != -1:
+		if board_layer.get_cell_source_id(board_pos(START_POSITION + block)) != -1:
 			print("GAME OVER")
 			get_tree().paused = true
 			return
@@ -107,16 +111,16 @@ func initialize_tetromino():
 # ===== DRAW =====
 func draw_tetromino():
 	for block in active_tetromino:
-		active_layer.set_cell(current_position + block, 0, piece_atlas)
+		active_layer.set_cell(board_pos(current_position + block), 0, piece_atlas)
 
 func clear_tetromino():
 	for block in active_tetromino:
-		active_layer.set_cell(current_position + block, -1)
+		active_layer.set_cell(board_pos(current_position + block), -1)
 
 # ===== LUKITUS =====
 func lock_tetromino():
 	for block in active_tetromino:
-		board_layer.set_cell(current_position + block, 0, piece_atlas)
+		board_layer.set_cell(board_pos(current_position + block), 0, piece_atlas)
 	clear_tetromino()
 	clear_full_rows()
 
@@ -131,26 +135,30 @@ func clear_full_rows():
 
 func is_row_full(row: int) -> bool:
 	for col in range(COLS):
-		if board_layer.get_cell_source_id(Vector2i(col, row)) == -1:
+		if board_layer.get_cell_source_id(board_pos(Vector2i(col, row))) == -1:
 			return false
 	return true
 
 func clear_row(row: int):
 	for col in range(COLS):
-		board_layer.set_cell(Vector2i(col, row), -1)
+		board_layer.set_cell(board_pos(Vector2i(col, row)), -1)
 
 func drop_rows_above(row: int):
 	for r in range(row - 1, -1, -1):
 		for col in range(COLS):
-			var source = board_layer.get_cell_source_id(Vector2i(col, r))
-			var atlas = board_layer.get_cell_atlas_coords(Vector2i(col, r))
-			if source != -1:
-				board_layer.set_cell(Vector2i(col, r + 1), source, atlas)
-			else:
-				board_layer.set_cell(Vector2i(col, r + 1), -1)
-	for col in range(COLS):
-		board_layer.set_cell(Vector2i(col, 0), -1)
+			var from_pos = board_pos(Vector2i(col, r))
+			var to_pos = board_pos(Vector2i(col, r + 1))
 
+			var source = board_layer.get_cell_source_id(from_pos)
+			var atlas = board_layer.get_cell_atlas_coords(from_pos)
+
+			if source != -1:
+				board_layer.set_cell(to_pos, source, atlas)
+			else:
+				board_layer.set_cell(to_pos, -1)
+
+	for col in range(COLS):
+		board_layer.set_cell(board_pos(Vector2i(col, 0)), -1)
 
 # ===== INPUT & PHYSICS =====
 func _physics_process(delta):
@@ -186,7 +194,6 @@ func hard_drop():
 		draw_tetromino()
 	lock_tetromino()
 	start_new_game()
-
 
 # ===== MOVEMENT =====
 func move_tetromino(dir: Vector2i):
@@ -229,5 +236,5 @@ func is_valid_position(pos: Vector2i) -> bool:
 	if pos.x < 0 or pos.x >= COLS or pos.y < 0 or pos.y >= ROWS:
 		return false
 		
-	var cell_id = board_layer.get_cell_source_id(pos)
+	var cell_id = board_layer.get_cell_source_id(board_pos(pos))
 	return cell_id == -1
