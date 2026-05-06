@@ -1,67 +1,15 @@
 extends Node2D
 
-# ===== TETROMINOT =====
-var i_tetromino = [
-	[Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(3,1)],
-	[Vector2i(2,0),Vector2i(2,1),Vector2i(2,2),Vector2i(2,3)],
-	[Vector2i(0,2),Vector2i(1,2),Vector2i(2,2),Vector2i(3,2)],
-	[Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3)]
-]
+const BoardLogicScript = preload("res://Scripts/BoardLogic.gd")
 
-var t_tetromino = [
-	[Vector2i(1,0),Vector2i(0,1),Vector2i(1,1),Vector2i(2,1)],
-	[Vector2i(1,0),Vector2i(1,1),Vector2i(2,1),Vector2i(1,2)],
-	[Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(1,2)],
-	[Vector2i(1,0),Vector2i(0,1),Vector2i(1,1),Vector2i(1,2)]
-]
-
-var o_tetromino = [
-	[Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)],
-	[Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)],
-	[Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)],
-	[Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,1)]
-]
-
-var z_tetromino = [
-	[Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(2,1)],
-	[Vector2i(2,0),Vector2i(1,1),Vector2i(2,1),Vector2i(1,2)],
-	[Vector2i(0,1),Vector2i(1,1),Vector2i(1,2),Vector2i(2,2)],
-	[Vector2i(1,0),Vector2i(0,1),Vector2i(1,1),Vector2i(0,2)]
-]
-
-var s_tetromino = [
-	[Vector2i(1,0),Vector2i(2,0),Vector2i(0,1),Vector2i(1,1)],
-	[Vector2i(1,0),Vector2i(1,1),Vector2i(2,1),Vector2i(2,2)],
-	[Vector2i(1,1),Vector2i(2,1),Vector2i(0,2),Vector2i(1,2)],
-	[Vector2i(0,0),Vector2i(0,1),Vector2i(1,1),Vector2i(1,2)]
-]
-
-var l_tetromino = [
-	[Vector2i(2,0),Vector2i(0,1),Vector2i(1,1),Vector2i(2,1)],
-	[Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(2,2)],
-	[Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(0,2)],
-	[Vector2i(0,0),Vector2i(1,0),Vector2i(1,1),Vector2i(1,2)]
-]
-
-var j_tetromino = [
-	[Vector2i(0,0),Vector2i(0,1),Vector2i(1,1),Vector2i(2,1)],
-	[Vector2i(1,0),Vector2i(2,0),Vector2i(1,1),Vector2i(1,2)],
-	[Vector2i(0,1),Vector2i(1,1),Vector2i(2,1),Vector2i(2,2)],
-	[Vector2i(1,0),Vector2i(1,1),Vector2i(0,2),Vector2i(1,2)]
-]
-
-var tetrominoes = [i_tetromino,t_tetromino,o_tetromino,z_tetromino,s_tetromino,l_tetromino,j_tetromino]
-var all_tetrominoes = tetrominoes.duplicate()
+var all_tetrominoes := TetrominoData.get_shapes()
+var tetrominoes := all_tetrominoes.duplicate(true)
+var score_manager := ScoreManager.new()
+var board_logic
 
 # ===== CONSTANTS =====
-const COLS = 10
-const ROWS = 20
-const CELL_SIZE = 32
-const BOARD_OFFSET = Vector2i(1, 1)
 const START_POSITION = Vector2i(3, 0)
-const GRID_COLOR = Color("#2f3f4f80")
-const GRID_BORDER_COLOR = Color("#77d9ff")
-const BOARD_BG_COLOR = Color("#05070d")
+const GHOST_ATLAS = Vector2i(7, 0)
 
 # ===== GAME STATE =====
 var current_position: Vector2i
@@ -77,45 +25,34 @@ var fast_fall_multiplier := 10.0
 # ===== TILE =====
 var tile_id := 0
 var piece_atlas: Vector2i
-var ghost_atlas: Vector2i
 
 @onready var board_layer = $Board
 @onready var active_layer = $Active
+@onready var ghost_layer = $Ghost
 @onready var score_label: Label = $ScoreLabel
 @onready var lines_label: Label = $LinesLabel
 @onready var level_label: Label = $LevelLabel
-@onready var ghost_layer = $Ghost
-
-# ===== SCORE =====
-var score := 0
-var lines_cleared := 0
-var level := 1
 
 # ===== START =====
 func _ready():
+	board_logic = BoardLogicScript.new(board_layer)
 	update_ui()
-	queue_redraw()
 	start_new_game()
 
 func start_new_game():
 	current_tetromino_type = choose_tetromino()
 	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
-	ghost_atlas = Vector2i(7, 0)
 	initialize_tetromino()
 
 func choose_tetromino():
 	if tetrominoes.is_empty():
-		tetrominoes = all_tetrominoes.duplicate()
+		tetrominoes = all_tetrominoes.duplicate(true)
 	tetrominoes.shuffle()
 	return tetrominoes.pop_front()
 
-func board_pos(pos: Vector2i) -> Vector2i:
-	return BOARD_OFFSET + pos
-
 func initialize_tetromino():
-	# GAME OVER -tarkistus
 	for block in current_tetromino_type[0]:
-		if board_layer.get_cell_source_id(board_pos(START_POSITION + block)) != -1:
+		if not board_logic.is_valid_position(START_POSITION + block):
 			print("GAME OVER")
 			get_tree().paused = true
 			return
@@ -129,77 +66,33 @@ func initialize_tetromino():
 func draw_tetromino():
 	clear_ghost()
 	draw_ghost()
+	
 	for block in active_tetromino:
-		active_layer.set_cell(board_pos(current_position + block), 0, piece_atlas)
+		active_layer.set_cell(board_logic.board_pos(current_position + block), 0, piece_atlas)
 
 func clear_tetromino():
 	clear_ghost()
+	
 	for block in active_tetromino:
-		active_layer.set_cell(board_pos(current_position + block), -1)
+		active_layer.set_cell(board_logic.board_pos(current_position + block), -1)
 
 # ===== LUKITUS =====
 func lock_tetromino():
-	for block in active_tetromino:
-		board_layer.set_cell(board_pos(current_position + block), 0, piece_atlas)
+	board_logic.lock_blocks(current_position, active_tetromino, piece_atlas)
 	clear_tetromino()
-	clear_full_rows()
-
-func clear_full_rows():
-	var cleared_this_turn := 0
-	var row = ROWS - 1
 	
-	while row >= 0:
-		if is_row_full(row):
-			clear_row(row)
-			drop_rows_above(row)
-			cleared_this_turn += 1
-		else:
-			row -= 1
-	if cleared_this_turn > 0:
-		add_score(cleared_this_turn)
-		
+	var cleared_rows = board_logic.clear_full_rows()
+	if cleared_rows > 0:
+		add_score(cleared_rows)
+
 func add_score(row_count: int):
-	lines_cleared += row_count
-	level = 1 + floori(lines_cleared / 10.0)
-
-	match row_count:
-		1: score += 100 * level
-		2: score += 300 * level
-		3: score += 500 * level
-		4: score += 800 * level
+	score_manager.add_lines(row_count)
 	update_ui()
-
+	
 func update_ui():
-	score_label.text = "Score: " + str(score)
-	lines_label.text = "Lines: " + str(lines_cleared)
-	level_label.text = "Level: " + str(level)
-
-func is_row_full(row: int) -> bool:
-	for col in range(COLS):
-		if board_layer.get_cell_source_id(board_pos(Vector2i(col, row))) == -1:
-			return false
-	return true
-
-func clear_row(row: int):
-	for col in range(COLS):
-		board_layer.set_cell(board_pos(Vector2i(col, row)), -1)
-
-func drop_rows_above(row: int):
-	for r in range(row - 1, -1, -1):
-		for col in range(COLS):
-			var from_pos = board_pos(Vector2i(col, r))
-			var to_pos = board_pos(Vector2i(col, r + 1))
-
-			var source = board_layer.get_cell_source_id(from_pos)
-			var atlas = board_layer.get_cell_atlas_coords(from_pos)
-
-			if source != -1:
-				board_layer.set_cell(to_pos, source, atlas)
-			else:
-				board_layer.set_cell(to_pos, -1)
-
-	for col in range(COLS):
-		board_layer.set_cell(board_pos(Vector2i(col, 0)), -1)
+	score_label.text = "Score: " + str(score_manager.score)
+	lines_label.text = "Lines: " + str(score_manager.lines_cleared)
+	level_label.text = "Level: " + str(score_manager.level)
 
 # ===== INPUT & PHYSICS =====
 func _physics_process(delta):
@@ -258,7 +151,7 @@ func rotate_tetromino():
 	var rotated = current_tetromino_type[next_rotation]
 	
 	for block in rotated:
-		if not is_valid_position(current_position + block):
+		if not board_logic.is_valid_position(current_position + block):
 			return
 	
 	clear_tetromino()
@@ -269,52 +162,32 @@ func rotate_tetromino():
 # ===== CHECKS =====
 func is_valid_move(dir: Vector2i) -> bool:
 	for block in active_tetromino:
-		if not is_valid_position(current_position + block + dir):
+		if not board_logic.is_valid_position(current_position + block + dir):
 			return false
 	return true
 
-func is_valid_position(pos: Vector2i) -> bool:
-	if pos.x < 0 or pos.x >= COLS or pos.y < 0 or pos.y >= ROWS:
-		return false
-		
-	var cell_id = board_layer.get_cell_source_id(board_pos(pos))
-	return cell_id == -1
-
-func _draw():
-	var top_left = Vector2(BOARD_OFFSET * CELL_SIZE)
-	var board_size = Vector2(COLS * CELL_SIZE, ROWS * CELL_SIZE)
-	
-	draw_rect(Rect2(top_left, board_size), BOARD_BG_COLOR, true)
-	
-	for col in range(COLS + 1):
-		var x = top_left.x + col * CELL_SIZE
-		draw_line(
-			Vector2(x, top_left.y),
-			Vector2(x, top_left.y + board_size.y), GRID_COLOR, 1)
-			
-	for row in range(ROWS + 1):
-		var y = top_left.y + row * CELL_SIZE
-		draw_line(Vector2(top_left.x, y), Vector2(top_left.x + board_size.x, y), GRID_COLOR, 1)
-	draw_rect(Rect2(top_left, board_size), GRID_BORDER_COLOR, false, 2)
-	
+# ===== GHOST =====
 func get_ghost_position() -> Vector2i:
 	var ghost_pos = current_position
+	
 	while true:
 		var next = ghost_pos + Vector2i.DOWN
+		
 		for block in active_tetromino:
-			if not is_valid_position(next + block):
+			if not board_logic.is_valid_position(next + block):
 				return ghost_pos
 		ghost_pos = next
+	
 	return ghost_pos
 
 func draw_ghost():
 	var ghost_pos = get_ghost_position()
+	
 	if ghost_pos == current_position:
 		return
+	
 	for block in active_tetromino:
-		ghost_layer.set_cell(board_pos(ghost_pos + block), 0, ghost_atlas)
+		ghost_layer.set_cell(board_logic.board_pos(ghost_pos + block), 0, GHOST_ATLAS)
 
 func clear_ghost():
 	ghost_layer.clear()
-	
-	
