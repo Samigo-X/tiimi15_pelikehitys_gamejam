@@ -80,6 +80,9 @@ var piece_atlas: Vector2i
 
 @onready var board_layer = $Board
 @onready var active_layer = $Active
+@onready var score_label: Label = $ScoreLabel
+@onready var lines_label: Label = $LinesLabel
+@onready var level_label: Label = $LevelLabel
 
 # ===== SCORE =====
 var score := 0
@@ -88,6 +91,7 @@ var level := 1
 
 # ===== START =====
 func _ready():
+	update_ui()
 	queue_redraw()
 	start_new_game()
 
@@ -145,21 +149,24 @@ func clear_full_rows():
 			cleared_this_turn += 1
 		else:
 			row -= 1
-	
 	if cleared_this_turn > 0:
 		add_score(cleared_this_turn)
 		
 func add_score(row_count: int):
 	lines_cleared += row_count
-	level = 1 + int(lines_cleared / 10)
+	level = 1 + floori(lines_cleared / 10.0)
 
 	match row_count:
 		1: score += 100 * level
 		2: score += 300 * level
 		3: score += 500 * level
 		4: score += 800 * level
-	print("Score: ", score, " Lines: ", lines_cleared, " Level: ", level)
+	update_ui()
 
+func update_ui():
+	score_label.text = "Score: " + str(score)
+	lines_label.text = "Lines: " + str(lines_cleared)
+	level_label.text = "Level: " + str(level)
 
 func is_row_full(row: int) -> bool:
 	for col in range(COLS):
