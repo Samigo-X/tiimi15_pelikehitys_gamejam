@@ -118,6 +118,39 @@ func lock_tetromino():
 	for block in active_tetromino:
 		board_layer.set_cell(current_position + block, 0, piece_atlas)
 	clear_tetromino()
+	clear_full_rows()
+
+func clear_full_rows():
+	var row = ROWS - 1
+	while row >= 0:
+		if is_row_full(row):
+			clear_row(row)
+			drop_rows_above(row)
+		else:
+			row -= 1
+
+func is_row_full(row: int) -> bool:
+	for col in range(COLS):
+		if board_layer.get_cell_source_id(Vector2i(col, row)) == -1:
+			return false
+	return true
+
+func clear_row(row: int):
+	for col in range(COLS):
+		board_layer.set_cell(Vector2i(col, row), -1)
+
+func drop_rows_above(row: int):
+	for r in range(row - 1, -1, -1):
+		for col in range(COLS):
+			var source = board_layer.get_cell_source_id(Vector2i(col, r))
+			var atlas = board_layer.get_cell_atlas_coords(Vector2i(col, r))
+			if source != -1:
+				board_layer.set_cell(Vector2i(col, r + 1), source, atlas)
+			else:
+				board_layer.set_cell(Vector2i(col, r + 1), -1)
+	for col in range(COLS):
+		board_layer.set_cell(Vector2i(col, 0), -1)
+
 
 # ===== INPUT & PHYSICS =====
 func _physics_process(delta):
@@ -142,6 +175,18 @@ func _physics_process(delta):
 	if fall_timer >= speed:
 		move_tetromino(Vector2i.DOWN)
 		fall_timer = 0
+	
+	if Input.is_action_just_pressed("drop"):
+		hard_drop()
+
+func hard_drop():
+	while is_valid_move(Vector2i.DOWN):
+		clear_tetromino()
+		current_position += Vector2i.DOWN
+		draw_tetromino()
+	lock_tetromino()
+	start_new_game()
+
 
 # ===== MOVEMENT =====
 func move_tetromino(dir: Vector2i):
