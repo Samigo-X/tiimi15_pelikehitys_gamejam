@@ -107,7 +107,7 @@ func initialize_tetromino():
 # ===== DRAW =====
 func draw_tetromino():
 	for block in active_tetromino:
-		active_layer.set_cell(current_position + block, 0, Vector2i.ZERO)
+		active_layer.set_cell(current_position + block, 0, piece_atlas)
 
 func clear_tetromino():
 	for block in active_tetromino:
@@ -116,7 +116,7 @@ func clear_tetromino():
 # ===== LUKITUS =====
 func lock_tetromino():
 	for block in active_tetromino:
-		board_layer.set_cell(current_position + block, 0, Vector2i.ZERO)
+		board_layer.set_cell(current_position + block, 0, piece_atlas)
 	clear_tetromino()
 
 # ===== INPUT & PHYSICS =====
