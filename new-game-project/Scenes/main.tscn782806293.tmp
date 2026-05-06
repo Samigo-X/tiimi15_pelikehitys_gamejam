@@ -95,5 +95,3 @@ theme_override_constants/outline_size = 5
 text = "jou"
 
 [node name="Ghost" type="TileMapLayer" parent="."]
-modulate = Color(1, 1, 1, 0.39215687)
-tile_set = SubResource("TileSet_8gbba")

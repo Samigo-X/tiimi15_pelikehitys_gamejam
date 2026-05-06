@@ -77,12 +77,14 @@ var fast_fall_multiplier := 10.0
 # ===== TILE =====
 var tile_id := 0
 var piece_atlas: Vector2i
+var ghost_atlas: Vector2i
 
 @onready var board_layer = $Board
 @onready var active_layer = $Active
 @onready var score_label: Label = $ScoreLabel
 @onready var lines_label: Label = $LinesLabel
 @onready var level_label: Label = $LevelLabel
+@onready var ghost_layer = $Ghost
 
 # ===== SCORE =====
 var score := 0
@@ -98,6 +100,7 @@ func _ready():
 func start_new_game():
 	current_tetromino_type = choose_tetromino()
 	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
+	ghost_atlas = Vector2i(7, 0)
 	initialize_tetromino()
 
 func choose_tetromino():
@@ -124,10 +127,13 @@ func initialize_tetromino():
 
 # ===== DRAW =====
 func draw_tetromino():
+	clear_ghost()
+	draw_ghost()
 	for block in active_tetromino:
 		active_layer.set_cell(board_pos(current_position + block), 0, piece_atlas)
 
 func clear_tetromino():
+	clear_ghost()
 	for block in active_tetromino:
 		active_layer.set_cell(board_pos(current_position + block), -1)
 
@@ -290,3 +296,25 @@ func _draw():
 		var y = top_left.y + row * CELL_SIZE
 		draw_line(Vector2(top_left.x, y), Vector2(top_left.x + board_size.x, y), GRID_COLOR, 1)
 	draw_rect(Rect2(top_left, board_size), GRID_BORDER_COLOR, false, 2)
+	
+func get_ghost_position() -> Vector2i:
+	var ghost_pos = current_position
+	while true:
+		var next = ghost_pos + Vector2i.DOWN
+		for block in active_tetromino:
+			if not is_valid_position(next + block):
+				return ghost_pos
+		ghost_pos = next
+	return ghost_pos
+
+func draw_ghost():
+	var ghost_pos = get_ghost_position()
+	if ghost_pos == current_position:
+		return
+	for block in active_tetromino:
+		ghost_layer.set_cell(board_pos(ghost_pos + block), 0, ghost_atlas)
+
+func clear_ghost():
+	ghost_layer.clear()
+	
+	
