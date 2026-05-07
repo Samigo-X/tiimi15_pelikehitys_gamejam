@@ -80,7 +80,7 @@ offset_right = 585.0
 offset_bottom = 440.0
 theme_override_constants/line_spacing = 3
 theme_override_constants/outline_size = 5
-text = "jou"
+text = "Score"
 
 [node name="LinesLabel" type="Label" parent="."]
 offset_left = 448.0
@@ -88,7 +88,7 @@ offset_top = 440.0
 offset_right = 585.0
 offset_bottom = 502.0
 theme_override_constants/outline_size = 5
-text = "jou"
+text = "Lines"
 
 [node name="LevelLabel" type="Label" parent="."]
 offset_left = 448.0
@@ -96,7 +96,7 @@ offset_top = 502.0
 offset_right = 603.0
 offset_bottom = 566.0
 theme_override_constants/outline_size = 5
-text = "jou"
+text = "Level"
 
 [node name="Ghost" type="TileMapLayer" parent="."]
 modulate = Color(1, 1, 1, 0.39215687)
