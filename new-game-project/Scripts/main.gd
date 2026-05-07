@@ -37,17 +37,35 @@ var can_hold := true
 @onready var lines_label: Label = $LinesLabel
 @onready var level_label: Label = $LevelLabel
 @onready var hold_layer = $HoldLayer
+@onready var next_layer = $NextLayer
+var next_tetromino_type: Array = []
 
 # ===== START =====
 func _ready():
 	board_logic = BoardLogicScript.new(board_layer)
 	update_ui()
 	start_new_game()
+	draw_next()
 
 func start_new_game():
-	current_tetromino_type = choose_tetromino()
+	if next_tetromino_type.is_empty():
+		next_tetromino_type = choose_tetromino()
+	
+	current_tetromino_type = next_tetromino_type
+	next_tetromino_type = choose_tetromino()
 	piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
+	draw_next()
 	initialize_tetromino()
+
+func draw_next():
+	if not next_layer:
+		return
+	next_layer.clear()
+	
+	var next_atlas = Vector2i(all_tetrominoes.find(next_tetromino_type), 0)
+	
+	for block in next_tetromino_type[0]:
+		next_layer.set_cell(Vector2i(block.x + 1, block.y + 1), 0, next_atlas)
 
 func choose_tetromino():
 	if tetrominoes.is_empty():
