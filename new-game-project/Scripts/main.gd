@@ -26,12 +26,17 @@ var fast_fall_multiplier := 10.0
 var tile_id := 0
 var piece_atlas: Vector2i
 
+# ===== HOLD =====
+var hold_tetromino_type: Array = []
+var can_hold := true
+
 @onready var board_layer = $Board
 @onready var active_layer = $Active
 @onready var ghost_layer = $Ghost
 @onready var score_label: Label = $ScoreLabel
 @onready var lines_label: Label = $LinesLabel
 @onready var level_label: Label = $LevelLabel
+@onready var hold_layer = $HoldLayer
 
 # ===== START =====
 func _ready():
@@ -80,6 +85,7 @@ func clear_tetromino():
 func lock_tetromino():
 	board_logic.lock_blocks(current_position, active_tetromino, piece_atlas)
 	clear_tetromino()
+	can_hold = true  # <-- tänne
 	
 	var cleared_rows = board_logic.clear_full_rows()
 	if cleared_rows > 0:
@@ -120,6 +126,9 @@ func _physics_process(delta):
 	
 	if Input.is_action_just_pressed("drop"):
 		hard_drop()
+	
+	if Input.is_action_just_pressed("hold"):
+		hold_piece()
 
 func hard_drop():
 	while is_valid_move(Vector2i.DOWN):
@@ -191,3 +200,33 @@ func draw_ghost():
 
 func clear_ghost():
 	ghost_layer.clear()
+
+func hold_piece():
+	if not can_hold:
+		return
+	
+	clear_tetromino()
+	
+	if hold_tetromino_type.is_empty():
+		hold_tetromino_type = current_tetromino_type
+		start_new_game()
+	else:
+		var temp = hold_tetromino_type
+		hold_tetromino_type = current_tetromino_type
+		current_tetromino_type = temp
+		piece_atlas = Vector2i(all_tetrominoes.find(current_tetromino_type), 0)
+		initialize_tetromino()
+	
+	can_hold = false
+	draw_hold()
+
+func draw_hold():
+	hold_layer.clear()
+	
+	if hold_tetromino_type.is_empty():
+		return
+	
+	var hold_atlas = Vector2i(all_tetrominoes.find(hold_tetromino_type), 0)
+	
+	for block in hold_tetromino_type[0]:
+		hold_layer.set_cell(block, 0, hold_atlas)

@@ -101,7 +101,3 @@ text = "jou"
 [node name="Ghost" type="TileMapLayer" parent="."]
 modulate = Color(1, 1, 1, 0.39215687)
 tile_set = SubResource("TileSet_8gbba")
-
-[node name="HoldLayer" type="TileMapLayer" parent="."]
-position = Vector2(560, 200)
-tile_set = SubResource("TileSet_kry3j")
