@@ -131,15 +131,15 @@ position = Vector2(491, 325)
 tile_set = SubResource("TileSet_kry3j")
 
 [node name="NextLabel" type="Label" parent="."]
-offset_left = 550.0
-offset_top = 28.0
-offset_right = 591.0
-offset_bottom = 51.0
+offset_left = 560.0
+offset_top = 40.0
+offset_right = 601.0
+offset_bottom = 63.0
 text = "NEXT"
 
 [node name="HoldLabel" type="Label" parent="."]
-offset_left = 554.0
-offset_top = 259.0
-offset_right = 600.0
-offset_bottom = 282.0
+offset_left = 560.0
+offset_top = 264.0
+offset_right = 606.0
+offset_bottom = 287.0
 text = "HOLD"
