@@ -63,9 +63,22 @@ func draw_next():
 	next_layer.clear()
 	
 	var next_atlas = Vector2i(all_tetrominoes.find(next_tetromino_type), 0)
+	var blocks = next_tetromino_type[0]
 	
-	for block in next_tetromino_type[0]:
-		next_layer.set_cell(Vector2i(block.x + 1, block.y + 1), 0, next_atlas)
+	var min_x = blocks[0].x
+	var max_x = blocks[0].x
+	var min_y = blocks[0].y
+	var max_y = blocks[0].y
+	for block in blocks:
+		min_x = min(min_x, block.x)
+		max_x = max(max_x, block.x)
+		min_y = min(min_y, block.y)
+		max_y = max(max_y, block.y)
+	
+	var offset = Vector2i(1 - min_x, 1 - min_y)
+	
+	for block in blocks:
+		next_layer.set_cell(block + offset, 0, next_atlas)
 
 func choose_tetromino():
 	if tetrominoes.is_empty():
@@ -245,6 +258,19 @@ func draw_hold():
 		return
 	
 	var hold_atlas = Vector2i(all_tetrominoes.find(hold_tetromino_type), 0)
+	var blocks = hold_tetromino_type[0]
 	
-	for block in hold_tetromino_type[0]:
-		hold_layer.set_cell(block, 0, hold_atlas)
+	var min_x = blocks[0].x
+	var max_x = blocks[0].x
+	var min_y = blocks[0].y
+	var max_y = blocks[0].y
+	for block in blocks:
+		min_x = min(min_x, block.x)
+		max_x = max(max_x, block.x)
+		min_y = min(min_y, block.y)
+		max_y = max(max_y, block.y)
+	
+	var offset = Vector2i(1 - min_x, 1 - min_y)
+	
+	for block in blocks:
+		hold_layer.set_cell(block + offset, 0, hold_atlas)

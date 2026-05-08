@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=4 uid="uid://d3ir376df04gd"]
+[gd_scene load_steps=9 format=4 uid="uid://d3ir376df04gd"]
 
 [ext_resource type="Script" uid="uid://b5fav3r75k1a0" path="res://Scripts/main.gd" id="1_bo1nx"]
 [ext_resource type="Texture2D" uid="uid://cpma5xfrhnok0" path="res://Assets/tetrominoes.png" id="2_8gbba"]
 [ext_resource type="Script" uid="uid://b36vjxk3s28ph" path="res://Scripts/BoardGrid.gd" id="2_jjvhh"]
+[ext_resource type="Texture2D" uid="uid://mrc3pgfm0mxw" path="res://Assets/TETRISbg.jpg" id="2_kry3j"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_jjvhh"]
 texture = ExtResource("2_8gbba")
@@ -63,6 +64,12 @@ sources/0 = SubResource("TileSetAtlasSource_bo1nx")
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_bo1nx")
 
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = 384.0
+offset_right = 1184.0
+offset_bottom = 800.0
+texture = ExtResource("2_kry3j")
+
 [node name="BoardGrid" type="Node2D" parent="."]
 script = ExtResource("2_jjvhh")
 
@@ -74,27 +81,27 @@ tile_set = SubResource("TileSet_kry3j")
 tile_set = SubResource("TileSet_8gbba")
 
 [node name="ScoreLabel" type="Label" parent="."]
-offset_left = 448.0
-offset_top = 376.0
-offset_right = 585.0
-offset_bottom = 440.0
+offset_left = 444.0
+offset_top = 455.0
+offset_right = 581.0
+offset_bottom = 519.0
 theme_override_constants/line_spacing = 3
 theme_override_constants/outline_size = 5
 text = "Score"
 
 [node name="LinesLabel" type="Label" parent="."]
-offset_left = 448.0
-offset_top = 440.0
-offset_right = 585.0
-offset_bottom = 502.0
+offset_left = 445.0
+offset_top = 544.0
+offset_right = 582.0
+offset_bottom = 606.0
 theme_override_constants/outline_size = 5
 text = "Lines"
 
 [node name="LevelLabel" type="Label" parent="."]
-offset_left = 448.0
-offset_top = 502.0
-offset_right = 603.0
-offset_bottom = 566.0
+offset_left = 443.0
+offset_top = 622.0
+offset_right = 598.0
+offset_bottom = 686.0
 theme_override_constants/outline_size = 5
 text = "Level"
 
@@ -102,10 +109,37 @@ text = "Level"
 modulate = Color(1, 1, 1, 0.39215687)
 tile_set = SubResource("TileSet_8gbba")
 
-[node name="HoldLayer" type="TileMapLayer" parent="."]
-position = Vector2(481, 221)
-tile_set = SubResource("TileSet_kry3j")
+[node name="Panel_NextLayer" type="Panel" parent="."]
+offset_left = 427.0
+offset_top = 76.0
+offset_right = 727.0
+offset_bottom = 226.0
+
+[node name="Panel_Holdlayer" type="Panel" parent="."]
+custom_minimum_size = Vector2(100, 100)
+offset_left = 428.0
+offset_top = 307.0
+offset_right = 728.0
+offset_bottom = 457.0
 
 [node name="NextLayer" type="TileMapLayer" parent="."]
-position = Vector2(481, 95)
+position = Vector2(491, 94)
 tile_set = SubResource("TileSet_kry3j")
+
+[node name="HoldLayer" type="TileMapLayer" parent="."]
+position = Vector2(491, 325)
+tile_set = SubResource("TileSet_kry3j")
+
+[node name="NextLabel" type="Label" parent="."]
+offset_left = 550.0
+offset_top = 28.0
+offset_right = 591.0
+offset_bottom = 51.0
+text = "NEXT"
+
+[node name="HoldLabel" type="Label" parent="."]
+offset_left = 554.0
+offset_top = 259.0
+offset_right = 600.0
+offset_bottom = 282.0
+text = "HOLD"
