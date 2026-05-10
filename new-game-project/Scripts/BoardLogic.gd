@@ -63,3 +63,8 @@ func drop_rows_above(row: int):
 
 	for col in range(COLS):
 		board_layer.set_cell(board_pos(Vector2i(col, 0)), -1)
+
+func clear_play_area():
+	for row in range(ROWS):
+		for col in range(COLS):
+			board_layer.set_cell(board_pos(Vector2i(col, row)), -1)

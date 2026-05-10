@@ -5,9 +5,15 @@ var score := 0
 var lines_cleared := 0
 var level := 1
 
+func reset():
+	score = 0
+	lines_cleared = 0
+	level = 1
+
 func add_lines(row_count: int):
 	lines_cleared += row_count
 	level = 1 + floori(lines_cleared / 10.0)
+	
 
 	match row_count:
 		1: score += 100 * level

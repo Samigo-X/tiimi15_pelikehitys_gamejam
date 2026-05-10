@@ -16,6 +16,7 @@ var current_position: Vector2i
 var current_tetromino_type: Array
 var rotation_index := 0
 var active_tetromino: Array
+var is_game_over := false
 
 # ===== FALL SYSTEM =====
 var fall_timer := 0.0
@@ -38,14 +39,18 @@ var can_hold := true
 @onready var level_label: Label = $LevelLabel
 @onready var hold_layer = $HoldLayer
 @onready var next_layer = $NextLayer
+@onready var game_over_panel: Control = $GameOverPanel
+
 var next_tetromino_type: Array = []
 
 # ===== START =====
 func _ready():
 	board_logic = BoardLogicScript.new(board_layer)
+	game_over_panel.visible = false
 	update_ui()
 	start_new_game()
 	draw_next()
+
 
 func start_new_game():
 	if next_tetromino_type.is_empty():
@@ -89,14 +94,14 @@ func choose_tetromino():
 func initialize_tetromino():
 	for block in current_tetromino_type[0]:
 		if not board_logic.is_valid_position(START_POSITION + block):
-			print("GAME OVER")
-			get_tree().paused = true
+			game_over()
 			return
 
 	current_position = START_POSITION
 	rotation_index = 0
 	active_tetromino = current_tetromino_type[rotation_index]
 	draw_tetromino()
+
 
 # ===== DRAW =====
 func draw_tetromino():
@@ -133,6 +138,9 @@ func update_ui():
 
 # ===== INPUT & PHYSICS =====
 func _physics_process(delta):
+	if is_game_over:
+		return
+	
 	var move = Vector2i.ZERO
 	
 	if Input.is_action_just_pressed("ui_left"):
@@ -274,3 +282,38 @@ func draw_hold():
 	
 	for block in blocks:
 		hold_layer.set_cell(block + offset, 0, hold_atlas)
+
+func game_over():
+	is_game_over = true
+	clear_ghost()
+	game_over_panel.visible = true
+	print("GAME OVER")
+
+func restart_game():
+	is_game_over = false
+	game_over_panel.visible = false
+
+	board_logic.clear_play_area()
+	active_layer.clear()
+	ghost_layer.clear()
+	hold_layer.clear()
+	next_layer.clear()
+
+	score_manager.reset()
+	update_ui()
+
+	hold_tetromino_type = []
+	can_hold = true
+	next_tetromino_type = []
+	tetrominoes = all_tetrominoes.duplicate(true)
+
+	fall_timer = 0.0
+	start_new_game()
+
+func _unhandled_input(event):
+	if not is_game_over:
+		return
+
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == KEY_R:
+			restart_game()
